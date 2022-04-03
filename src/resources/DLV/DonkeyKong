@@ -1,0 +1,528 @@
+movement(X) | noMovement(X) :- move(X).
+
+:- #count{X: movement(X)} != 1.		
+:- #count{X: movement(X), X = 1} = 1, #count{X: movement(X), X = 0} = 1.
+
+
+:- movement(M),  mariotile(X,Y,L,_,1,0), ghosttile(X+1,Y+1,1,L,_).
+:- movement(M),  mariotile(X,Y,L,_,0,0), ghosttile(X-1,Y+1,0,L,_).
+:- movement(M),  mariotile(X,Y,L,2,_,0), map(X,Y,3,L), ghosttile(X,Y+3,_,L,_).
+:- movement(M),  mariotile(X,Y,L,2,_,0), map(X,Y,3,L), ghosttile(X-1,Y+3,_,L,_).
+:- movement(M),  mariotile(X,Y,L,2,_,0), map(X,Y,3,L), ghosttile(X-2,Y+3,_,L,_).
+:- movement(M),  mariotile(X,Y,L,2,_,0), map(X,Y,3,L), ghosttile(X+1,Y+3,_,L,_).
+:- movement(M),  mariotile(X,Y,L,2,_,0), map(X,Y,3,L), ghosttile(X+2,Y+3,_,L,_).
+
+ 
+
+BoxHigh(N) :- #count{X,Y : map(X,Y,6,L), mariotile(X1,Y1,L1,_,_,_), L > L1} = N.
+BoxLower(N) :- #count{X,Y : map(X,Y,6,L), mariotile(X1,Y1,L1,_,_,_), L < L1} = N.
+BoxLevelMario(N) :- #count{X,Y : map(X,Y,6,L), mariotile(_,_,L,_,_,_)} = N.
+BoxLevelPiu(N) :- #count{X,Y : map(X,Y,6,L1), mariotile(_,_,L,_,_,_), L1 = L +1} = N. 
+direction(D) :- mariotile(_,_,_,_,D,_).
+
+
+contOnSamePlace(N) :- #count{X,Y: ghosttile(X,Y,_,L) } = N.
+
+ghostNearJumpSx(N) :- mariotile(X,Y,L,_,_,_), #count{L,X,Y: ghosttile(X,Y+1,_,L,0) } = N1,  #count{L,X,Y: ghosttile(X-1,Y+1,_,L,0) } = N2, N = N1 + N2.
+ghostNearJumpDx(N) :- mariotile(X,Y,L,_,_,_), #count{L,X,Y: ghosttile(X+1,Y+1,_,L,0) } = N1,  #count{L,X,Y: ghosttile(X+2,Y+1,_,L,0) } = N2, N = N1 + N2.
+
+ghostNearSX(N) :- mariotile(X,Y,L,_,_,_), #count{L,X,Y: ghosttile(X,Y+1,_,L,0) } = N1,  #count{L,X,Y: ghosttile(X-1,Y+1,_,L,0) } = N2, #count{L,X,Y: ghosttile(X-2,Y+1,_,L,0) } = N3, #count{L,X,Y: ghosttile(X-3,Y+1,_,L,0) } = N4, #count{L,X,Y: ghosttile(X-4,Y+1,_,L,0) } = N5, N = N1 + N2 + N3 + N4 + N5.
+ghostNearDX(N) :- mariotile(X,Y,L,_,_,_), #count{L,X,Y: ghosttile(X+1,Y+1,_,L,0) } = N1,  #count{L,X,Y: ghosttile(X+2,Y+1,_,L,0) } = N2, #count{L,X,Y: ghosttile(X+3,Y+1,_,L,0) } = N3, #count{L,X,Y: ghosttile(X+4,Y+1,_,L,0) } = N4, #count{L,X,Y: ghosttile(X+5,Y+1,_,L,0) } = N5, N = N1 + N2 + N3 + N4 + N5.
+
+ghostNearSXB(N) :- mariotile(X,Y,L,_,_,1), #count{L,X,Y: ghosttile(X,Y,_,L,0) } = N1,  #count{L,X,Y: ghosttile(X-1,Y,_,L,0) } = N2, #count{L,X,Y: ghosttile(X-2,Y,_,L,0) } = N3, #count{L,X,Y: ghosttile(X-3,Y,_,L,0) } = N4, #count{L,X,Y: ghosttile(X-4,Y,_,L,0) } = N5, N = N1 + N2 + N3 + N4 + N5.
+ghostNearDXB(N) :- mariotile(X,Y,L,_,_,1), #count{L,X,Y: ghosttile(X+1,Y,_,L,0) } = N1,  #count{L,X,Y: ghosttile(X+2,Y,_,L,0) } = N2, #count{L,X,Y: ghosttile(X+3,Y,_,L,0) } = N3, #count{L,X,Y: ghosttile(X+4,Y,_,L,0) } = N4, #count{L,X,Y: ghosttile(X+5,Y,_,L,0) } = N5, N = N1 + N2 + N3 + N4 + N5.
+
+
+ghostNearSXClimbUp(N) :- mariotile(X,Y,L,_,_,_), #count{L1,X: ghosttile(X,_,_,L1,2), L1 = L-1} = N1,  #count{L1,X1: ghosttile(X1,_,_,L1,2), X1 = X-1, L1 = L-1 } = N2, N = N1 + N2.
+ghostNearSXClimbDown(N) :- mariotile(X,Y,L,_,_,_), #count{L,X: ghosttile(X,_,_,L,1) } = N1,  #count{L,X1: ghosttile(X1,_,_,L,1), X1 = X-1 } = N2, N = N1 + N2.
+
+ghostNearDXClimbUp(N) :- mariotile(X,Y,L,_,_,_), #count{L1,X1: ghosttile(X1,_,_,L1,2), X1 = X+1, L1 = L-1 } = N1,  #count{L1,X1: ghosttile(X1,_,_,L1,2), X1 = X+2, L1 = L-1 } = N2, N = N1 + N2.
+ghostNearDXClimbDown(N) :- mariotile(X,Y,L,_,_,_), #count{L,X1: ghosttile(X1,_,_,L,1), X1 = X+1 } = N1,  #count{L,X1: ghosttile(X1,_,_,L,1), X1 = X+2} = N2, N = N1 + N2.
+
+beAbleClimbDown(X,Y,T,L) :- map(X,Y,T,L), map(X,Y+2,3,L-1),T = 0.
+:- movement(2), mariotile(15,24,L,_,1,_), ghosttile(17,25,0,L,_). 
+
+Ghost(X) :- ghosttile(X,_,_,_,S), S != 0.
+GhostXY(X,Y) :- ghosttile(X,Y,_,_,_).
+noGhost(X) :- not Ghost(X), cordX(X).
+noGhost(X,Y) :- not GhostXY(X,Y), cordX(X), cordY(Y).
+clear(X) :- map(X,_,3,L), noGhost(X,_,L).
+
+
+stairsDiff(D,M) :- map(X,Y,3,L), mariotile(X1,Y,L,_,_,_), noGhost(X), X > X1, D = X - X1, M = 1.
+stairsDiff(D,M) :- map(X,Y,3,L), mariotile(X1,Y,L,_,_,_), noGhost(X), X < X1, D = X1 - X, M = 0.
+nearestStairs(D) :- #min{Z,M : stairsDiff(Z,M)} = D.
+
+boxesDiff(D,M) :- map(X,Y,6,L), mariotile(X1,_,L,_,_,_), X > X1, D = X - X1, M = 1.
+boxesDiff(D,M) :- map(X,Y,6,L), mariotile(X1,_,L,_,_,_), X < X1, D = X1 - X, M = 0.
+nearestBoxe(D) :- #min{Z,M : boxesDiff(Z,M)} = D.
+
+stairsDiffDown(D,M) :- beAbleClimbDown(X,Y+1,T,L), mariotile(X1,Y,L,_,_,_), noGhost(X), X > X1, D = X - X1, M = 1.
+stairsDiffDown(D,M) :- beAbleClimbDown(X,Y+1,T,L), mariotile(X1,Y,L,_,_,_), noGhost(X), X < X1, D = X1 - X, M = 0.
+nearestStairsDown(D) :- #min{Z,M : stairsDiffDown(Z,M)} = D.
+
+
+ghostLevel(N) :- #count{L,X,Y: ghosttile(X,Y,_,L,_,_), mariotile(_,_,L,_,_,_) } = N.
+
+
+boxLeftLevel(N) :- #count{X,Y : map(X,Y,6,L), mariotile(X1,_,L,_,_,_), X < X1} = N.
+boxRightLevel(N) :- #count{X,Y : map(X,Y,6,L), mariotile(X1,_,L,_,_,_), X1 < X} = N.
+
+peachtile(X,Y) :- map(X,Y,7,_).
+contBox(T) :- #count{X,Y: map(X,Y,6,_)} = T.
+
+%% NON PUò MUOVERSI SE STA SALENDO O SCENDENDO
+:- movement(1), mariotile(_,_,_,1,_,_).
+:- movement(1), mariotile(_,_,_,2,_,_).
+:- movement(0), mariotile(_,_,_,1,_,_).
+:- movement(0), mariotile(_,_,_,2,_,_).
+:- movement(2), mariotile(_,_,_,1,_,_).
+:- movement(2), mariotile(_,_,_,2,_,_).
+
+% non può fare movimenti se sta saltando 
+:- movement(2), jumping(1).
+:- movement(0), jumping(1).
+:- movement(1), jumping(1).
+:- movement(4), jumping(1).
+
+%////////////////////////////////////////////////////////////////////
+%% SALITA MARIO SCALA
+:- movement(2), precedente(2). 
+:- movement(2), precedente(3).
+:- movement(3), precedente(2).
+:- movement(4), precedente(2).
+:- movement(3), mariotile(_,_,_,2,_,_).
+:- movement(3), mariotile(X,Y,L,A,_,0), map(X,Y,T,_), A != 1, T != 3. 
+:~ movement(3), mariotile(X,Y,L,_,1,0), map(X,Y,3,L), BoxLevelMario(B), B != 0. [1@1, X,Y,L,B]
+:~ movement(1), mariotile(X,Y,L,_,_,0), map(X,Y,3,L), BoxLevelMario(B), B = 0. [1@2, X,Y,L,B]
+:~ movement(3), mariotile(X,Y,L,_,_,0), map(X,Y-1,1,_). [1@3, X,Y,L]
+%////////////////////////////////////////////////////////////////////
+
+
+:- movement(0), ghostNearSX(N), N > 1.
+:- movement(1), ghostNearDX(N), N > 1.
+
+:- noMovement(2), mariotile(X,Y,L,_,1,0), ghosttile(X-1,Y+1,_,L,1), ghostNearJumpSx(N), N = 1.
+
+:- movement(2), mariotile(X,Y,L,_,_,1).
+:- movement(3), mariotile(X,Y,L,_,_,1).
+:- movement(4), mariotile(X,Y,L,_,_,1).
+:- movement(1), mariotile(X,Y,L,_,_,1), map(X+1,Y+2,6,L).
+:- movement(0), mariotile(X,Y,L,_,_,1), map(X+1,Y+2,0,L).
+:- movement(0), mariotile(X,Y,L,_,_,1), ghostNearDX(N), N > 0. 
+:- movement(1), mariotile(X,Y,L,_,_,1), ghostNearSX(N), N > 0.
+
+
+%///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+% Movimento di mario in base alle scale 
+:~ movement(0), mariotile(X,Y,L,_,_,0), nearestStairs(N), stairsDiff(N,M), BoxLevelMario(B), BoxLower(V), BoxHigh(H), H >= V, M = 1, B = 0. [2@4, X,Y,L,N,M,V,H,B]
+:~ movement(1), mariotile(X,Y,L,_,_,0), nearestStairs(N), stairsDiff(N,M), BoxLevelMario(B), BoxLower(V), BoxHigh(H), H >= V, M = 0, B = 0. [2@4, X,Y,L,N,M,V,H,B]
+
+:~ movement(0), mariotile(X,Y,L,_,_,0), nearestStairsDown(N), stairsDiffDown(N,M), BoxLevelMario(B), BoxLower(V), BoxHigh(H), V > H, M = 1, B = 0. [2@4, X,Y,L,N,M,V,H,B]
+:~ movement(1), mariotile(X,Y,L,_,_,0), nearestStairsDown(N), stairsDiffDown(N,M), BoxLevelMario(B), BoxLower(V), BoxHigh(H), V > H, V = 0, M = 0, B = 0. [2@4, X,Y,L,N,M,V,H,B]
+
+:~ movement(2), mariotile(X,Y,L,_,_,0), map(X+1,Y+2,4,L). [2@4, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,_,0), map(X,Y+2,4,L). [2@4, X,Y,L]
+%////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+%/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+% non preferisce salire o scendere se al livello di mario ci sono ancora casse 
+:~ movement(3), mariotile(X,Y,L,_,_,0), map(X,Y,3,L), BoxLevelMario(B), B != 0. [2@6, X,Y,L,B]
+:~ movement(4), mariotile(X,Y,L,_,_,0), beAbleClimbDown(X,Y+1,0,L), BoxLevelMario(B), B != 0. [2@6, X,Y,L,B]
+%/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+%//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+% deve preferire di andare a destra o a sinistra in base alla scala più vicina 
+:~ movement(0), mariotile(X,Y,L,_,_,0), nearestBoxe(N), boxesDiff(N,M), BoxLevelMario(B), M = 1, B != 0. [2@7, X,Y,L,N,M,B]
+:~ movement(1), mariotile(X,Y,L,_,_,0), nearestBoxe(N), boxesDiff(N,M), BoxLevelMario(B), M = 0, B != 0. [2@7, X,Y,L,N,M,B]
+
+:~ movement(4), mariotile(X,Y,L,_,_,0), map(X-1,Y+2,6,L). [1@7, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,_,0), map(X-1,Y+2,0,L). [1@7, X,Y,L]
+%//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+%//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+% controllo per il salto 
+:~ movement(4), mariotile(X,Y,L,_,1,0), map(X+1,Y+2,0,L). [1@8, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,1,0), map(X+1,Y+2,6,L). [1@8, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,1,0), map(X+1,Y+2,0,L). [1@8, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,1,0), map(X+1,Y+2,6,L). [1@8, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X,Y+2,0,L). [1@8, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X,Y+2,6,L). [1@8, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X,Y+2,0,L). [1@8, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X,Y+2,6,L). [1@8, X,Y,L]
+
+:~ movement(4), mariotile(X,Y,L,_,1,0), map(X+1,Y+2,0,L). [1@8, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,1,0), map(X+1,Y+2,6,L). [1@8, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,1,0), map(X+1,Y+2,0,L). [1@8, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,1,0), map(X+1,Y+2,6,L). [1@8, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X,Y+2,0,L). [1@8, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X,Y+2,6,L). [1@8, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X,Y+2,0,L). [1@8, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X,Y+2,6,L). [1@8, X,Y,L]
+
+:~ movement(4), mariotile(X,Y,L,_,1,0), map(X+1,Y+2,0,L). [1@8, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,1,0), map(X+1,Y+2,6,L). [1@8, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,1,0), map(X+1,Y+2,0,L). [1@8, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,1,0), map(X+1,Y+2,6,L). [1@8, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X,Y+2,0,L). [1@8, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X,Y+2,6,L). [1@8, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X,Y+2,0,L). [1@8, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X,Y+2,6,L). [1@8, X,Y,L]
+%//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+%//////////////////////////////////////////////////////////////////////////////////////////////
+:~ movement(2), mariotile(X,Y,L,_,_,0), map(X,Y,3,L),  BoxLevelMario(B), B = 0. [2@9, X,Y,L,B]
+%///////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+%////////////////////////////////////////////////////////////////////////////////////////////////
+% deve preferire la salita se peach si trova più in alto e non ci sono più box da prendere
+:~ noMovement(3), mariotile(X,Y,L,_,_,0), map(X,Y,3,L), contBox(T), T = 0, peachtile(X,Y1), Y1 > Y. [1@10, X,Y,T]
+:~ noMovement(3), mariotile(X,Y,L,_,_,0), map(X-1,Y,3,L), contBox(T), T = 0, peachtile(X,Y1), Y1 > Y. [1@10, X,Y,T]
+
+% non deve voler scendere se non ci sono più casse
+:~ movement(4), mariotile(X,Y,L,_,_,0),beAbleClimbDown(X,Y+1,0,L), contBox(T), T = 0. [1@10, X,Y,T]
+:~ movement(4), mariotile(X,Y,L,_,_,0),beAbleClimbDown(X,Y+1,0,L), contBox(T), T = 0. [1@10, X,Y,T]
+%//////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+%///////////////////////////////////////////////////////////////////////////////////////////////
+% non preferisce salire se al suo lv c'è un fantasma ma sono presenti ancora casse
+:~ movement(3), mariotile(X,Y,L,_,1,0),map(X,Y,3,L), ghosttile(X+2,Y+1,0,L,_),  BoxLevelMario(B), B != 0. [2@11, X,Y,L,B]
+:~ movement(3), mariotile(X,Y,L,_,0,0),map(X,Y,3,L), ghosttile(X-1,Y+1,1,L,_), BoxLevelMario(B), B != 0. [2@11, X,Y,L,B]
+%////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+%///////////////////////////////////////////////////////////////////////////////////////////////
+% salire o scendere in base alla casse
+:~ movement(4), BoxLevelMario(B), BoxLower(V), BoxHigh(H), H >= V, B = 0. [2@12, B,V,H]
+:~ movement(3), BoxLevelMario(B), BoxLower(V), BoxHigh(H), H < V, B = 0. [2@12, B,V,H]
+%////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+%////////////////////////////////////////////////////////////////////////////////////////////////
+% non deve saltare se c'è un fantasma davanti a lui e va nella sua stessa direzione 
+:~ movement(2), mariotile(X,Y,L,_,0,0), ghosttile(X-1,Y+1,0,L,0). [4@14, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,1,0), ghosttile(X+2,Y+1,1,L,0). [4@14, X,Y,L]
+
+
+:~ noMovement(3),mariotile(X,Y,L,_,_,0), map(X,Y,3,L), ghostNearSX(N), N > 1. [1@14, X,Y,L,N]
+:~ noMovement(2),mariotile(X,Y,L,_,0,0), map(X,Y,3,L), ghosttile(X-1,Y+1,1,L,_), ghostNearJumpSx(N), N = 1. [1@14, X,Y,L,N]
+:~ noMovement(2),mariotile(X,Y,L,_,1,0), map(X,Y,3,L), ghosttile(X+1,Y+1,0,L,_), ghostNearJumpDx(N), N = 1. [1@14, X,Y,L,N]
+
+:~ noMovement(3),mariotile(X,Y,L,_,_,0), map(X,Y,3,L), ghostNearDX(N), N > 1. [1@14, X,Y,L,N]
+%////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+%////////////////////////////////////////////////////////////////////////////////////////////////
+:~ noMovement(3), mariotile(X,Y,L,_,_,0), map(X,Y,3,L), BoxLevelMario(B), BoxLower(V), BoxHigh(H), H > V, B = 0. [1@16, X,Y,L,V,H,B]
+:~ noMovement(4), mariotile(X,Y,L,_,_,0), beAbleClimbDown(X,Y+1,0,L), BoxLevelMario(B), BoxLower(V), BoxHigh(H), H < V, B = 0. [1@16, X,Y,L,V,H,B]
+%////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+%////////////////////////////////////////////////////////////////////////////////////////////////
+% non preferisce scendere se c'è un fantasma sotto di lui e mario si trova sulla scala
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X-2,Y,3,L), ghosttile(X-2,Y,_,L,1). [1@120, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X-2,Y-1,3,L), ghosttile(X-2,Y-1,_,L,1). [1@120, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X-2,Y-2,3,L), ghosttile(X-2,Y-2,_,L,1). [1@120, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X-1,Y,3,L), ghosttile(X-1,Y,_,L,1). [1@120, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X-1,Y-1,3,L), ghosttile(X-1,Y-1,_,L,1). [1@120, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X-1,Y-2,3,L), ghosttile(X-1,Y-2,_,L,1). [1@120, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X,Y,3,L), ghosttile(X,Y,_,L,1). [1@120, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X,Y-1,3,L), ghosttile(X,Y-1,_,L,1). [1@120, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X,Y-2,3,L), ghosttile(X,Y-2,_,L,1). [1@120, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X-1,Y+3,3,L-1), ghosttile(X-1,Y+3,_,L-1,2). [1@120, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X-1,Y+4,3,L-1), ghosttile(X-1,Y+4,_,L-1,2). [1@120, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X-1,Y+2,1,L), ghosttile(X-1,Y+2,_,L,2). [1@120, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X,Y+3,3,L-1), ghosttile(X,Y+3,_,L-1,2). [1@120, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X,Y+4,3,L-1), ghosttile(X,Y+4,_,L-1,2). [1@120, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X,Y+2,1,L), ghosttile(X,Y+2,_,L,2). [1@120, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,1,0), map(X+2,Y,3,L), ghosttile(X+2,Y,_,L,1). [1@120, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,1,0), map(X+2,Y-1,3,L), ghosttile(X+2,Y-1,_,L,1). [1@120, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,1,0), map(X+2,Y,3,L), ghosttile(X+1,Y,_,L,1). [1@120, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,1,0), map(X+2,Y-1,3,L), ghosttile(X+1,Y-1,_,L,1). [1@120, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X,Y-1,3,L), ghosttile(X,Y-1,_,L,1). [1@120, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X-1,Y,3,L), ghosttile(X-1,Y,_,L,1). [1@120, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,0,0), map(X,Y-1,3,L), ghosttile(X,Y-1,_,L,1). [1@120, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,1,0), map(X+2,Y,3,L), ghosttile(X+1,Y-2,_,L,1). [1@120, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,1,0), map(X+2,Y,3,L), ghosttile(X+2,Y-2,_,L,1). [1@120, X,Y,L]
+%////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+%////////////////////////////////////////////////////////////////////////////////////////////////
+% non deve scendere se ci sono casse sul suo livello
+:~ movement(4), mariotile(X,Y,L,_,_,0), beAbleClimbDown(X,Y+1,0,L), BoxLevelMario(B), B != 0. [5@170, X,Y,L,B]
+%////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+%///////////////////////////////////////////////////////////////////////////////////////////////
+:~ movement(3), BoxLevelMario(B), B != 0. [5@200, B]
+:~ movement(4), BoxLevelMario(B), B != 0. [5@200, B]
+%////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+%////////////////////////////////////////////////////////////////////////////////////////////////
+
+:~ movement(2), boxesDiff(N,M), boxesDiff(N,M1), M != M1. [1@480, N,M,M1]
+:~ movement(4), boxesDiff(N,M), boxesDiff(N,M1), M != M1. [1@480, N,M,M1]
+
+:~ movement(2), stairsDiffDown(N,M), stairsDiffDown(N,M1), M != M1. [1@480, N,M,M1]
+:~ movement(4), stairsDiffDown(N,M), stairsDiffDown(N,M1), M != M1. [1@480, N,M,M1]
+
+:~ movement(2), stairsDiff(N,M), stairsDiff(N,M1), M != M1. [1@480, N,M,M1]
+:~ movement(4), stairsDiff(N,M), stairsDiff(N,M1), M != M1. [1@480, N,M,M1]
+
+
+:~ movement(4), mariotile(X,Y,L,_,1,0), beAbleClimbDown(X,Y+1,0,L), ghosttile(X+1,Y+1,0,L,0), map(X+1,Y+2,6,L). [1@480, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,1,0), beAbleClimbDown(X,Y+1,0,L), ghosttile(X+2,Y+1,0,L,0), map(X+2,Y+2,6,L). [1@480, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,1,0), beAbleClimbDown(X,Y+1,0,L), ghosttile(X+1,Y+1,0,L,0), map(X+1,Y+2,0,L). [1@480, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,1,0), beAbleClimbDown(X,Y+1,0,L), ghosttile(X+2,Y+1,0,L,0), map(X+2,Y+2,0,L). [1@480, X,Y,L]
+
+% mario salta le casse e i buchi
+:~ movement(0), mariotile(X,Y,L,_,1,0), map(X+1,Y+2,0,L). [1@480, X,Y,L]
+:~ movement(0), mariotile(X,Y,L,_,1,0), map(X+1,Y+2,6,L). [1@480, X,Y,L]
+:~ movement(1), mariotile(X,Y,L,_,1,0), map(X+1,Y+2,0,L). [1@480, X,Y,L]
+:~ movement(1), mariotile(X,Y,L,_,1,0), map(X+1,Y+2,6,L). [1@480, X,Y,L]
+:~ movement(0), mariotile(X,Y,L,_,0,0), map(X,Y+2,0,L). [1@480, X,Y,L]
+:~ movement(0), mariotile(X,Y,L,_,0,0), map(X,Y+2,6,L). [1@480, X,Y,L]
+:~ movement(1), mariotile(X,Y,L,_,0,0), map(X,Y+2,0,L). [1@480, X,Y,L]
+:~ movement(1), mariotile(X,Y,L,_,0,0), map(X,Y+2,6,L). [1@480, X,Y,L]
+
+
+
+% preferisce salire se ci sono più di due fantasmi sul suo lv
+:~ noMovement(3), mariotile(X,Y,L,_,_,0), map(X,Y,3,L), ghostLevel(N), N > 2. [1@480, X,Y,L,N]
+
+
+% preferisce non saltare davanti i buchi o le casse se c'è più di un fantasma
+:~ movement(0), mariotile(X,Y,L,_,0,0), map(X,Y+2,6,L), ghostNearSX(N), N > 1. [1@480, X,Y,L,N]
+:~ movement(0), mariotile(X,Y,L,_,0,0), map(X,Y+2,0,L), ghostNearSX(N), N > 1. [1@480, X,Y,L,N]
+
+
+% controlli se c'è più di un fantasma vicino
+:~ movement(2), ghostNearSX(N), N > 1. [1@480, N]
+:~ movement(4), ghostNearSX(N), N > 1. [1@480, N]
+:~ movement(2), ghostNearDX(N), N > 1. [1@480, N]
+:~ movement(4), ghostNearDX(N), N > 1. [1@480, N]
+
+
+% non preferisce salire se vicino c'è fantasma e una cassa 
+:~ movement(3), mariotile(X,Y,L,_,_,0), map(X,Y,3,L), ghosttile(X+1,Y+1,0,L,0), map(X+1,Y+2,6,L). [1@480, X,Y,L]
+:~ movement(3), mariotile(X,Y,L,_,_,0), map(X,Y,3,L), ghosttile(X+2,Y+1,0,L,0), map(X+2,Y+2,6,L). [1@480, X,Y,L]
+:~ movement(3), mariotile(X,Y,L,_,_,0), map(X,Y,3,L), ghosttile(X,Y+1,1,L,0), map(X,Y+2,6,L). [1@480, X,Y,L]
+:~ movement(3), mariotile(X,Y,L,_,_,0), map(X,Y,3,L), ghosttile(X-1,Y+1,1,L,0), map(X-1,Y+2,6,L).  [1@480, X,Y,L]
+
+
+% non preferisce scendere se vicino c'è fantasma e una cassa 
+:~ movement(4), mariotile(X,Y,L,_,_,0), beAbleClimbDown(X,Y+1,0,L), ghosttile(X+1,Y+1,0,L,0), map(X+1,Y+2,6,L). [1@480, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,_,0), beAbleClimbDown(X,Y+1,0,L), ghosttile(X+2,Y+1,0,L,0), map(X+2,Y+2,6,L). [1@480, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,_,0), beAbleClimbDown(X,Y+1,0,L), ghosttile(X,Y+1,1,L,0), map(X,Y+2,6,L). [1@480, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,_,0), beAbleClimbDown(X,Y+1,0,L), ghosttile(X-1,Y+1,1,L,0), map(X-1,Y+2,6,L).  [1@480, X,Y,L]
+
+:~ movement(0), mariotile(X,Y,L,_,0,0), map(X-1,Y,3,_), ghosttile(X-2,Y+1,1,_,_). [1@480, X,Y,L]
+
+% SALTO FANTASMI DX
+:~ movement(2), mariotile(X,Y,L,_,1,0),  map(X+1,Y+2,0,L), ghosttile(X+1,Y+1,_,L,_), ghostNearDX(N), N = 1. [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,1,0),  map(X+1,Y+2,0,L), ghosttile(X+2,Y+1,_,L,_), ghostNearDX(N), N = 1. [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,1,0),  map(X+1,Y+2,0,L), ghosttile(X+3,Y+1,_,L,_), ghostNearDX(N), N = 1. [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,1,0),  map(X+1,Y+2,0,L), ghosttile(X+4,Y+1,_,L,_), ghostNearDX(N), N = 1. [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,1,0),  map(X+1,Y+2,0,L), ghosttile(X+5,Y+1,_,L,_), ghostNearDX(N), N = 1, L < 4. [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,1,0),  map(X+1,Y+2,6,L), ghosttile(X+1,Y+1,_,L,_), ghostNearDX(N), N = 1. [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,1,0),  map(X+1,Y+2,6,L), ghosttile(X+2,Y+1,_,L,_), ghostNearDX(N), N = 1. [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,1,0),  map(X+1,Y+2,6,L), ghosttile(X+3,Y+1,_,L,_), ghostNearDX(N), N = 1. [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,1,0),  map(X+1,Y+2,6,L), ghosttile(X+4,Y+1,_,L,_), ghostNearDX(N), N = 1. [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,1,0),  map(X+1,Y+2,6,L), ghosttile(X+5,Y+1,_,L,_), ghostNearDX(N), N = 1, L < 4. [1@480, X,Y,L]
+
+% SALTO FANTASMI SX
+:- movement(1), mariotile(X,Y,L,_,0,0),  map(X,Y+2,6,L), ghosttile(X-1,Y+1,_,L,_), ghostNearJumpSx(N), N = 1.
+:~ movement(2), mariotile(X,Y,L,_,0,0),  map(X,Y+2,0,L), ghosttile(X,Y+1,_,L,_), ghostNearSX(N), N = 1. [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0),  map(X,Y+2,0,L), ghosttile(X-1,Y+1,_,L,_), ghostNearSX(N), N = 1. [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0),  map(X,Y+2,6,L), ghosttile(X-1,Y+1,_,L,_), ghostNearSX(N), N = 1. [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0),  map(X,Y+2,0,L), ghosttile(X-2,Y+1,_,L,_), ghostNearSX(N), N = 1. [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0),  map(X,Y+2,0,L), ghosttile(X-3,Y+1,_,L,_), ghostNearSX(N), N = 1. [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0),  map(X,Y+2,0,L), ghosttile(X-4,Y+1,_,L,_), ghostNearSX(N), N = 1, L < 4. [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0),  map(X,Y+2,6,L), ghosttile(X-2,Y+1,_,L,_), ghostNearSX(N), N = 1. [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0),  map(X,Y+2,6,L), ghosttile(X-3,Y+1,_,L,_), ghostNearSX(N), N = 1. [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0),  map(X,Y+2,6,L), ghosttile(X-4,Y+1,_,L,_), ghostNearSX(N), N = 1, L < 4. [1@480, X,Y,L]
+
+
+% non preferisce saltare verso destra se c'è una scala subito dopo una cassa e c'è un fantasma che sta scendendo 
+:~ movement(2), mariotile(X,Y,L,_,1,0),  map(X+1,Y+2,0,L), ghosttile(X+3,Y-2,_,L,_). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,1,0),  map(X+1,Y+2,6,L), ghosttile(X+3,Y-2,_,L,_). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,1,0),  map(X+1,Y+2,0,L), ghosttile(X+3,Y-1,_,L,_). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,1,0),  map(X+1,Y+2,6,L), ghosttile(X+3,Y-1,_,L,_). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,1,0),  map(X+1,Y+2,0,L), ghosttile(X+3,Y,_,L,_). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,1,0),  map(X+1,Y+2,6,L), ghosttile(X+3,Y,_,L,_). [1@480, X,Y,L]
+
+
+% non preferisce saltare verso destra se c'è una scala subito dopo una cassa e c'è un fantasma che sta salendo
+:~ movement(2), mariotile(X,Y,L,_,1,0),  map(X+1,Y+2,0,L), ghosttile(X+3,Y+2,_,L,_). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,1,0),  map(X+1,Y+2,6,L), ghosttile(X+3,Y+2,_,L,_). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,1,0),  map(X+1,Y+2,0,L), ghosttile(X+3,Y+3,_,L-1,_). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,1,0),  map(X+1,Y+2,6,L), ghosttile(X+3,Y+3,_,L-1,_). [1@480, X,Y,L]
+
+
+% non preferisce saltare verso sinista se c'è una scala subito dopo una cassa e c'è un fantasma che sta scendendo 
+:~ movement(2), mariotile(X,Y,L,_,0,0),  map(X,Y+2,0,L), ghosttile(X-2,Y-1,_,L,_). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0),  map(X,Y+2,6,L), ghosttile(X-2,Y-1,_,L,_). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0),  map(X,Y+2,0,L), ghosttile(X-2,Y,_,L,_). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0),  map(X,Y+2,6,L), ghosttile(X-2,Y,_,L,_). [1@480, X,Y,L]
+
+
+% non preferisce saltare verso sinista se c'è una scala subito dopo una cassa e c'è un fantasma che sta scendendo
+:~ movement(2), mariotile(X,Y,L,_,0,0),  map(X,Y+2,0,L), ghosttile(X-2,Y+1,_,L,_). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0),  map(X,Y+2,6,L), ghosttile(X-2,Y+1,_,L,_). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0),  map(X,Y+2,0,L), ghosttile(X-3,Y+1,_,L,_). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0),  map(X,Y+2,6,L), ghosttile(X-3,Y+1,_,L,_). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0),  map(X,Y+2,0,L), ghosttile(X-2,Y+2,_,L,_). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0),  map(X,Y+2,6,L), ghosttile(X-2,Y+2,_,L,_). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0),  map(X,Y+2,0,L), ghosttile(X-2,Y+3,_,L-1,_). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0),  map(X,Y+2,6,L), ghosttile(X-2,Y+3,_,L-1,_). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0),  map(X,Y+2,0,L), ghosttile(X-3,Y+2,_,L,_). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0),  map(X,Y+2,6,L), ghosttile(X-3,Y+2,_,L,_). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0),  map(X,Y+2,0,L), ghosttile(X-3,Y+3,_,L-1,_). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0),  map(X,Y+2,6,L), ghosttile(X-3,Y+3,_,L-1,_). [1@480, X,Y,L]
+
+
+
+% mario preferisce aspettare che il fantasma salga la scala (verso destra)
+:~ movement(1), mariotile(X,Y,L,_,1,0), map(X+2,Y+3,3,L-1), ghosttile(X+2,Y+3,_,L-1,2). [1@480, X,Y,L]
+:~ movement(1), mariotile(X,Y,L,_,1,0), map(X+2,Y+4,3,L-1), ghosttile(X+2,Y+4,_,L-1,2). [1@480, X,Y,L]
+:~ movement(1), mariotile(X,Y,L,_,1,0), map(X+2,Y+2,1,L), ghosttile(X+2,Y+2,_,L,2). [1@480, X,Y,L]
+:~ movement(1), mariotile(X,Y,L,_,1,0), map(X+1,Y+3,3,L-1), ghosttile(X+1,Y+3,_,L-1,2). [1@480, X,Y,L]
+:~ movement(1), mariotile(X,Y,L,_,1,0), map(X+1,Y+2,1,L), ghosttile(X+1,Y+2,_,L,2). [1@480, X,Y,L]
+
+:~ movement(2), mariotile(X,Y,L,_,1,0), map(X+2,Y+3,3,L-1), ghosttile(X+2,Y+3,_,L-1,2). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,1,0), map(X+2,Y+4,3,L-1), ghosttile(X+2,Y+4,_,L-1,2). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,1,0), map(X+2,Y+2,1,L), ghosttile(X+2,Y+2,_,L,2). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,1,0), map(X+1,Y+3,3,L-1), ghosttile(X+1,Y+3,_,L-1,2). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,1,0), map(X+1,Y+2,1,L), ghosttile(X+1,Y+2,_,L,2). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,1,0), map(X+3,Y+1,0,L), ghosttile(X+3,Y+1,_,L,2). [1@480, X,Y,L]
+
+:~ movement(3), mariotile(X,Y,L,_,1,0), map(X+2,Y+3,3,L-1), ghosttile(X+2,Y+3,_,L-1,2). [1@480, X,Y,L]
+:~ movement(3), mariotile(X,Y,L,_,1,0), map(X+2,Y+4,3,L-1), ghosttile(X+2,Y+4,_,L-1,2). [1@480, X,Y,L]
+:~ movement(3), mariotile(X,Y,L,_,1,0), map(X+2,Y+2,1,L), ghosttile(X+2,Y+2,_,L,2). [1@480, X,Y,L]
+:~ movement(3), mariotile(X,Y,L,_,1,0), map(X+1,Y+3,3,L-1), ghosttile(X+1,Y+3,_,L-1,2). [1@480, X,Y,L]
+:~ movement(3), mariotile(X,Y,L,_,1,0), map(X+1,Y+2,1,L), ghosttile(X+1,Y+2,_,L,2). [1@480, X,Y,L]
+
+% mario preferisce aspettare che il fantasma salga la scala (verso sinistra)
+:~ movement(0), mariotile(X,Y,L,_,0,0), map(X-1,Y+3,3,L-1), ghosttile(X-1,Y+3,_,L-1,2). [1@480, X,Y,L]
+:~ movement(0), mariotile(X,Y,L,_,0,0), map(X-1,Y+4,3,L-1), ghosttile(X-1,Y+4,_,L-1,2). [1@480, X,Y,L]
+:~ movement(0), mariotile(X,Y,L,_,0,0), map(X-1,Y+2,1,L), ghosttile(X-1,Y+2,_,L,2). [1@480, X,Y,L]
+:~ movement(0), mariotile(X,Y,L,_,0,0), map(X,Y+3,3,L-1), ghosttile(X,Y+3,_,L-1,2). [1@480, X,Y,L]
+:~ movement(0), mariotile(X,Y,L,_,0,0), map(X,Y+2,1,L), ghosttile(X,Y+2,_,L,2). [1@480, X,Y,L]
+
+:~ movement(2), mariotile(X,Y,L,_,0,0), map(X-1,Y+3,3,L-1), ghosttile(X-1,Y+3,_,L-1,2). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0), map(X-1,Y+4,3,L-1), ghosttile(X-1,Y+4,_,L-1,2). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0), map(X-1,Y+2,1,L), ghosttile(X-1,Y+2,_,L,2). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0), map(X,Y+3,3,L-1), ghosttile(X,Y+3,_,L-1,2). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0), map(X,Y+2,1,L), ghosttile(X,Y+2,_,L,2). [1@480, X,Y,L]
+
+
+% mario preferisce aspettare che il fantasma scenda la scala (verso destra)
+:~ movement(1), mariotile(X,Y,L,_,1,0), map(X+2,Y,3,L), ghosttile(X+2,Y,_,L,1). [1@480, X,Y,L]
+:~ movement(1), mariotile(X,Y,L,_,1,0), map(X+2,Y-1,3,L), ghosttile(X+2,Y-1,_,L,1). [1@480, X,Y,L]
+:~ movement(1), mariotile(X,Y,L,_,1,0), map(X+2,Y-1,3,L), ghosttile(X+2,Y-2,_,L,1). [1@480, X,Y,L]
+:~ movement(1), mariotile(X,Y,L,_,1,0), map(X+2,Y,3,L), ghosttile(X+1,Y,_,L,1). [1@480, X,Y,L]
+:~ movement(1), mariotile(X,Y,L,_,1,0), map(X+2,Y-1,3,L), ghosttile(X+1,Y-1,_,L,1). [1@480, X,Y,L]
+:~ movement(1), mariotile(X,Y,L,_,1,0), map(X+2,Y-1,3,L), ghosttile(X+1,Y-2,_,L,1). [1@480, X,Y,L]
+
+:~ movement(2), mariotile(X,Y,L,_,1,0), map(X+2,Y,3,L), ghosttile(X+2,Y,_,L,1). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,1,0), map(X+2,Y-1,3,L), ghosttile(X+2,Y-1,_,L,1). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,1,0), map(X+2,Y-1,3,L), ghosttile(X+2,Y-2,_,L,1). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,1,0), map(X+2,Y,3,L), ghosttile(X+1,Y,_,L,1). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,1,0), map(X+2,Y-1,3,L), ghosttile(X+1,Y-1,_,L,1). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,1,0), map(X+2,Y-1,3,L), ghosttile(X+1,Y-2,_,L,1). [1@480, X,Y,L]
+
+
+
+% mario preferisce aspettare che il fantasma scenda la scala (verso sinistra)
+:~ movement(0), mariotile(X,Y,L,_,0,0), map(X-1,Y,3,L), ghosttile(X-1,Y,_,L,1). [1@480, X,Y,L]
+:~ movement(0), mariotile(X,Y,L,_,0,0), map(X-1,Y-1,3,L), ghosttile(X-1,Y-1,_,L,1). [1@480, X,Y,L]
+:~ movement(0), mariotile(X,Y,L,_,0,0), map(X-1,Y-2,3,L), ghosttile(X-1,Y-2,_,L,1). [1@480, X,Y,L]
+:~ movement(0), mariotile(X,Y,L,_,0,0), map(X,Y,3,L), ghosttile(X,Y,_,L,1). [1@480, X,Y,L]
+:~ movement(0), mariotile(X,Y,L,_,0,0), map(X,Y-1,3,L), ghosttile(X,Y-1,_,L,1). [1@480, X,Y,L]
+:~ movement(0), mariotile(X,Y,L,_,0,0), map(X,Y-2,3,L), ghosttile(X,Y-2,_,L,1). [1@480, X,Y,L]
+
+:~ movement(2), mariotile(X,Y,L,_,0,0), map(X-2,Y,3,L), ghosttile(X-2,Y-3,_,L+1,1). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0), map(X-2,Y,3,L), ghosttile(X-2,Y-2,_,L,1). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0), map(X-1,Y,3,L), ghosttile(X-1,Y,_,L,1). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0), map(X-1,Y-1,3,L), ghosttile(X-1,Y-1,_,L,1). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0), map(X-1,Y-2,3,L), ghosttile(X-1,Y-2,_,L,1). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0), map(X,Y,3,L), ghosttile(X,Y,_,L,1). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0), map(X,Y-1,3,L), ghosttile(X,Y-1,_,L,1). [1@480, X,Y,L]
+:~ movement(2), mariotile(X,Y,L,_,0,0), map(X,Y-2,3,L), ghosttile(X,Y-2,_,L,1). [1@480, X,Y,L]
+
+%////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+%////////////////////////////////////////////////////////////////////////////////////////////////
+% va a destra o sinistra in base alla posizione di peach sull'ultimo lv
+:~ movement(0), mariotile(X,Y,6,_,_,0), peachtile(X1,_), X1 >= X, contBox(T), T = 0.  [2@500, X,Y,X1,T]
+:~ movement(1), mariotile(X,Y,6,_,_,0), peachtile(X1,_), X1 < X, contBox(T), T = 0. [2@500, X,Y,X1,T]
+
+:~ noMovement(3), mariotile(X,Y,L,_,_,0), map(X,Y,3,L), contBox(T), T = 0, L != 6. [1@500, X,Y,T]
+:~ noMovement(3), mariotile(X,Y,L,_,_,0), map(X-1,Y,3,L), contBox(T), T = 0, L != 6. [1@500, X,Y,T]
+%////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+%////////////////////////////////////////////////////////////////////////////////////////////////
+% non deve scendere se non c'è una scala
+:~ movement(4), mariotile(X,Y,L,_,_,0), not beAbleClimbDown(X,Y+1,0,L). [1@550, X,Y,L]
+%////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+%////////////////////////////////////////////////////////////////////////////////////////////////
+% salto fantasmi senza casse vicino
+:~ movement(1), mariotile(X,Y,L,_,1,0), ghosttile(X+1,Y+1,0,L,_), ghostNearJumpDx(N), N = 1. [1@580, X,Y,L,N]
+:~ movement(1), mariotile(X,Y,L,_,1,0), not map(X+1,Y+2,6,L), ghosttile(X+2,Y+1,0,L,_), ghostNearJumpDx(N), N = 1. [1@580, X,Y,L,N]
+:~ movement(1), mariotile(X,Y,L,_,1,0), not map(X+1,Y+2,0,L), ghosttile(X+2,Y+1,0,L,_), ghostNearJumpDx(N), N = 1. [1@580, X,Y,L,N]
+
+:~ movement(0), mariotile(X,Y,L,_,0,0), ghosttile(X-1,Y+1,1,L,_), ghostNearJumpSx(N), N = 1. [1@580, X,Y,L,N]
+%:~ movement(0), mariotile(X,Y,L,_,0,0), not map(X,Y+2,6,L), ghosttile(X-2,Y+1,1,L,_), ghostNearJumpSx(N), N = 1. [1@580, X,Y,L,N]
+
+:~ movement(4), mariotile(X,Y,L,_,0,0), ghosttile(X-1,Y+1,1,L,_). [1@580, X,Y,L]
+:~ movement(4), mariotile(X,Y,L,_,1,0), ghosttile(X+1,Y+1,0,L,_), ghostNearJumpDx(N), N = 1. [1@580, X,Y,L,N]
+:~ movement(4), mariotile(X,Y,L,_,1,0), not map(X+1,Y+2,6,L), ghosttile(X+2,Y+1,0,L,_), ghostNearJumpDx(N), N = 1. [1@580, X,Y,L,N]
+
+% mario preferisce aspettare sulla scala che il fantasma sopra di lui passi prima di poter completare la salita 
+:~ noMovement(4), mariotile(X,Y,L,_,_,0), map(X,Y,3,L), ghosttile(X+1,Y-2,_,L+1,_). [1@580, X,Y,L]
+:~ noMovement(4), mariotile(X,Y,L,_,_,0), map(X,Y,3,L), ghosttile(X,Y-2,_,L+1,_). [1@580, X,Y,L]
+ 
+:~ noMovement(4), mariotile(X,Y,L,_,_,0), map(X+1,Y,3,L), ghosttile(X+2,Y-2,_,L+1,_). [1@580, X,Y,L]
+:~ noMovement(4), mariotile(X,Y,L,_,_,0), map(X+1,Y,3,L), ghosttile(X+1,Y-2,_,L+1,_). [1@580, X,Y,L]
+:~ noMovement(4), mariotile(X,Y,L,_,_,0), map(X+1,Y,3,L), ghosttile(X,Y-2,_,L+1,_). [1@580, X,Y,L]
+
+:~ noMovement(4), mariotile(X,Y,L,_,_,0), map(X+1,Y,3,L), ghosttile(X-1,Y-2,_,L+1,_). [1@580, X,Y,L]
+:~ noMovement(4), mariotile(X,Y,L,_,_,0), map(X+1,Y,3,L), ghosttile(X,Y-2,_,L+1,_). [1@580, X,Y,L]
+
+:~ noMovement(4), mariotile(X,Y,L,_,_,0), map(X,Y,3,L), ghosttile(X-1,Y-2,_,L+1,_). [1@580, X,Y,L]
+:~ noMovement(4), mariotile(X,Y,L,_,_,0), map(X,Y,3,L), ghosttile(X-2,Y-2,_,L+1,_). [1@580, X,Y,L]
+:~ noMovement(4), mariotile(X,Y,L,_,_,0), map(X,Y,3,L), ghosttile(X,Y-2,_,L+1,_). [1@580, X,Y,L]
+
+%////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+%////////////////////////////////////////////////////////////////////////////////////////////////
+% non preferisce muoversi a sinistra o destra se ha due fantasmi vicini 
+:~ movement(0), mariotile(X,Y,L,_,0,0), ghostNearSX(N), N > 1. [1@700, X,Y,L,N]
+:~ movement(1), mariotile(X,Y,L,_,1,0), ghostNearDX(N), N > 1. [1@700, X,Y,L,N]
+%////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+%////////////////////////////////////////////////////////////////////////////////////////////////
+% non preferisce salire la scala se ha un fantasma vicino 
+:~ movement(3), mariotile(X,Y,L,_,1,0), map(X,Y,3,L), ghosttile(X+1,Y+1,0,L,_). [1@880, X,Y,L]
+:~ movement(3), mariotile(X,Y,L,_,0,0), map(X,Y,3,L), ghosttile(X,Y+1,1,L,_). [1@880, X,Y,L]
+%////////////////////////////////////////////////////////////////////////////////////////////////
