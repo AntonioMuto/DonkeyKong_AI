@@ -11,6 +11,9 @@ java
 # GAMEPLAY
 ![image](https://user-images.githubusercontent.com/93258305/163430263-4a712416-699f-4467-a031-ab0421155328.png)
 
+![image](https://user-images.githubusercontent.com/93258305/163431043-afdc6ffa-663b-4665-8e3c-1763a870ba80.png)
+
+
 # WIN
 ![image](https://user-images.githubusercontent.com/93258305/163430445-e845e5e7-881f-4c25-8893-20d1e371abe0.png)
 
